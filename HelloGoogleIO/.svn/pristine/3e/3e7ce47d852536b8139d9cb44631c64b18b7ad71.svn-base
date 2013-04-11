@@ -1,0 +1,225 @@
+package com.hellogoogleio;
+
+import android.app.Activity;
+
+import android.content.Context;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.PorterDuff.Mode;
+import android.os.Bundle;
+import android.util.AttributeSet;
+import android.view.MotionEvent;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
+import android.graphics.RectF;
+public class HelloGoogleIOActivity extends Activity {
+	
+	private Paint paint = new Paint(Color.GREEN);
+
+	private float initX, initY;
+	private boolean drawing = false;
+	
+    public class MySurfaceThread extends Thread {
+    	
+    	private SurfaceHolder myThreadSurfaceHolder;
+    	private MySurfaceView myThreadSurfaceView;
+    	private boolean myThreadRun = false;
+    	
+    	public MySurfaceThread(SurfaceHolder surfaceHolder, MySurfaceView surfaceView) {
+    		myThreadSurfaceHolder = surfaceHolder;
+    		myThreadSurfaceView = surfaceView;
+        }
+    	
+    	public void setRunning(boolean b) {
+    		myThreadRun = b;
+   		}
+
+		@Override
+		public void run() {
+			// TODO Auto-generated method stub
+			//super.run();
+			while (myThreadRun) {
+                Canvas c = null;
+                try {
+                    c = myThreadSurfaceHolder.lockCanvas(null);
+                    synchronized (myThreadSurfaceHolder) {
+                        myThreadSurfaceView.onDraw(c);
+                    }
+                } finally {
+                    // do this in a finally so that if an exception is thrown
+                    // during the above, we don't leave the Surface in an
+                    // inconsistent state
+                    if (c != null) {
+                    	myThreadSurfaceHolder.unlockCanvasAndPost(c);
+                    }
+                }
+            }
+		}
+	}
+
+	public class MySurfaceView extends SurfaceView implements SurfaceHolder.Callback{
+		
+		private MySurfaceThread thread;
+		private float t=50;
+		private float z=50;
+		private Ball ball=new Ball(t,z);
+		private Ledge ledge=new Ledge(200,200);
+		private int collision=0;
+		@Override
+		protected void onDraw(Canvas canvas) {
+			// TODO Auto-generated method stub
+			//super.onDraw(canvas);
+			if(drawing){
+				//TUK RISUVAME!ofertata e slednata-pi6e6 si funkciq
+				//updatePhysics,sled tova si pi6e6 funkciq drawStuff i gi vika6 tuk
+				canvas.drawColor(Color.BLACK, Mode.DARKEN);//background risuvane
+				collision=detectCollisions();
+				
+				ball.drawBall(canvas,initX,initY,paint,collision);//risuva topkata v momenta
+				ledge.drawBall(canvas,paint);
+			}
+		}
+		
+		
+		public  int detectCollisions(){
+			RectF xa0=new RectF(ledge.left-50,ledge.up-50,ledge.right+50,ledge.down+50);
+			if (xa0.contains(ball.x,ball.y)==false)	return 0;
+			
+			if (ball.y<ledge.up && ball.x<ledge.left){
+				float y1=(ball.y-ledge.up);
+				y1=y1*y1;
+				float x1=(ball.x-ledge.left);
+				x1=x1*x1;
+				if (x1+y1<2500) return 1;
+			}
+			
+			RectF xa2=new RectF(ledge.left,ledge.up-50,ledge.right,ledge.up);
+			if (xa2.contains(ball.x,ball.y)) return 2;
+			
+			if (ball.y<ledge.up && ball.x>ledge.right){
+				float y1=(ball.y-ledge.up);
+				y1=y1*y1;
+				float x1=(ball.x-ledge.right);
+				x1=x1*x1;
+				if (x1+y1<2500) return 3;
+			}
+			RectF xa4=new RectF(ledge.left-50,ledge.up,ledge.left,ledge.down);
+			if (xa4.contains(ball.x,ball.y)) return 4;
+			RectF xa5=new RectF(ledge.left,ledge.up,ledge.right,ledge.down);
+			if (xa4.contains(ball.x,ball.y)) return 5;
+			RectF xa6=new RectF(ledge.right,ledge.up,ledge.right+50,ledge.down);
+			if (xa4.contains(ball.x,ball.y)) return 6;
+			
+			if (ball.y>ledge.down && ball.x<ledge.left){
+				float y1=(ball.y-ledge.down);
+				y1=y1*y1;
+				float x1=(ball.x-ledge.left);
+				x1=x1*x1;
+				if (x1+y1<2500) return 7;
+			}
+			
+			RectF xa8=new RectF(ledge.right,ledge.down,ledge.right,ledge.down+50);
+			if (xa4.contains(ball.x,ball.y)) return 8;
+			
+			if (ball.y>ledge.down && ball.x>ledge.right){
+				float y1=(ball.y-ledge.down);
+				y1=y1*y1;
+				float x1=(ball.x-ledge.right);
+				x1=x1*x1;
+				if (x1+y1<2500) return 9;
+			}
+			
+			
+					return 0;
+		}
+		@Override
+		public boolean onTouchEvent(MotionEvent event) { //hva6ta touch eventite
+			// TODO Auto-generated method stub
+			//return super.onTouchEvent(event);
+			int action = event.getAction();
+			if (action==MotionEvent.ACTION_MOVE){ //tova e za drag i drop 
+			//	float x = event.getX();
+		//		float y = event.getY();
+		//		radius = (float) Math.sqrt(Math.pow(x-initX, 2) + Math.pow(y-initY, 2));
+				}
+			else if (action==MotionEvent.ACTION_DOWN){ //tva e pri tap
+				initX = event.getX();
+				initY = event.getY();
+			//	radius = 1;
+				drawing = true;
+				}
+			else if (action==MotionEvent.ACTION_UP){ //tova e otpuskane
+				//drawing = false;
+				}
+			
+			return true;
+		}
+
+		public MySurfaceView(Context context) {
+			super(context);
+			// TODO Auto-generated constructor stub
+			init();
+		}
+
+		public MySurfaceView(Context context, AttributeSet attrs) {
+			super(context, attrs);
+			// TODO Auto-generated constructor stub
+			init();
+		}
+
+		public MySurfaceView(Context context, AttributeSet attrs, int defStyle) {
+			super(context, attrs, defStyle);
+			// TODO Auto-generated constructor stub
+			init();
+		}
+		
+		private void init(){
+			getHolder().addCallback(this);
+			thread = new MySurfaceThread(getHolder(), this);
+			
+			setFocusable(true); // make sure we get key events
+			
+			paint.setStyle(Paint.Style.STROKE);
+			paint.setStrokeWidth(3);
+			paint.setColor(Color.WHITE);
+		}
+
+		@Override
+		public void surfaceChanged(SurfaceHolder arg0, int arg1, int arg2,
+				int arg3) {
+			// TODO Auto-generated method stub
+		}
+
+		@Override
+		public void surfaceCreated(SurfaceHolder holder) {
+			// TODO Auto-generated method stub
+			thread.setRunning(true);
+			thread.start();
+		}
+
+		@Override
+		public void surfaceDestroyed(SurfaceHolder holder) {
+			// TODO Auto-generated method stub
+			boolean retry = true;
+			thread.setRunning(false);
+			while (retry) {
+				try {
+					thread.join();
+					retry = false;
+				} catch (InterruptedException e) {
+				}
+	        }
+		}
+	}
+
+	/** Called when the activity is first created. */
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        //setContentView(R.layout.main);
+        
+        MySurfaceView mySurfaceView = new MySurfaceView(this);
+        setContentView(mySurfaceView);
+    }
+}

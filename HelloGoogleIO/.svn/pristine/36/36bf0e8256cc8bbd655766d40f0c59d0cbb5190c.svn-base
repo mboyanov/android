@@ -1,0 +1,78 @@
+package com.hellogoogleio;
+
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+
+
+public class Ledge {
+public float left,up,right,down;
+
+public Ledge(float x1,float y1)
+{
+	this.left=x1;
+	this.up=y1;
+	this.right=x1+200;
+	this.down=y1+30;
+}
+
+
+
+public float getLeft() {
+	return left;
+}
+
+
+
+public void setLeft(float left) {
+	this.left = left;
+}
+
+
+
+public float getUp() {
+	return up;
+}
+
+
+
+public void setUp(float up) {
+	this.up = up;
+}
+
+
+
+public float getRight() {
+	return right;
+}
+
+
+
+public void setRight(float right) {
+	this.right = right;
+}
+
+
+
+public float getDown() {
+	return down;
+}
+
+
+
+public void setDown(float down) {
+	this.down = down;
+}
+
+
+
+public void drawBall(Canvas canvas,Paint paint){
+	this.up=this.up-1;
+	this.down=this.down-1;
+	if (this.up<0) {this.up=500;this.down=530;}
+	
+	canvas.drawRect(this.left, this.up,this.right,this.down, paint);
+}
+
+
+}

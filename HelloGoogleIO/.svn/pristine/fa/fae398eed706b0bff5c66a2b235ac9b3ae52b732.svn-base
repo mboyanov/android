@@ -1,0 +1,288 @@
+package com.hellogoogleio;
+
+
+
+import android.app.Activity;
+
+import android.content.Context;
+import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.PorterDuff.Mode;
+import android.os.Bundle;
+import android.util.AttributeSet;
+import android.util.Log;
+import android.view.Display;
+import android.view.MotionEvent;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
+import android.widget.EditText;
+
+
+public class HelloGoogleIOActivity extends Activity {
+
+	private Paint paint = new Paint(Color.GREEN);
+
+	private float initX, initY;
+	private boolean drawing = false;
+
+	public class MySurfaceThread extends Thread {
+
+		private SurfaceHolder myThreadSurfaceHolder;
+		private MySurfaceView myThreadSurfaceView;
+		private boolean myThreadRun = false;
+
+		public MySurfaceThread(SurfaceHolder surfaceHolder,
+				MySurfaceView surfaceView) {
+			myThreadSurfaceHolder = surfaceHolder;
+			myThreadSurfaceView = surfaceView;
+		}
+
+		public void setRunning(boolean b) {
+			myThreadRun = b;
+		}
+
+		@Override
+		public void run() {
+			// TODO Auto-generated method stub
+			// super.run();
+			while (myThreadRun) {
+				Canvas c = null;
+				try {
+					c = myThreadSurfaceHolder.lockCanvas(null);
+					synchronized (myThreadSurfaceHolder) {
+						myThreadSurfaceView.onDraw(c);
+					}
+				} finally {
+					// do this in a finally so that if an exception is thrown
+					// during the above, we don't leave the Surface in an
+					// inconsistent state
+					if (c != null) {
+						myThreadSurfaceHolder.unlockCanvasAndPost(c);
+					}
+				}
+			}
+		}
+	}
+
+	public class MySurfaceView extends SurfaceView implements
+			SurfaceHolder.Callback {
+		private int width, height;
+		private MySurfaceThread thread;
+		private float t = 50;
+		private float z = 50;
+		private Bitmap[] frames=new Bitmap[20];
+		private float speed = 2;
+		private Ball ball = new Ball(t, z,frames,width,height);
+		private Ledge[] ledges = new Ledge[10];
+		private long time = 0;
+		private int score = 0;
+		private long lastupdate = 0;
+		private int collision = 0;
+		private int state=0;
+
+		@Override
+		protected void onDraw(Canvas canvas) {
+			paint.setColor(Color.LTGRAY);
+			canvas.drawPaint(paint);
+			paint.setColor(Color.WHITE);
+			if (drawing) {
+				if (state==1) {
+					canvas.drawColor(Color.BLACK, Mode.DARKEN);
+					canvas.drawText("GAME OVER!", width/4, height/3, paint);
+					canvas.drawText("Score:"+Integer.toString(score), width/4, height/3+height/20, paint);
+					paint.setTextSize(height/20);
+					canvas.drawText("Tap to restart", width/4, height/3+height/10, paint);
+				}
+				else{
+			//	canvas.drawColor(Color.BLUE, Mode.DARKEN);
+				collision = ball.detectCollisions(ledges);
+
+				state=ball.drawBall(canvas, initX, initY, paint, collision, speed);
+				
+				crystal.drawCrystal(canvas, paint);
+				for (int i = 0; i < 10; i++) {
+					ledges[i].drawLedge(canvas, paint, width, height, speed);
+				}
+
+				long t = System.currentTimeMillis();
+				if (t - time > 1000) {
+					score++;
+					time = t;
+				}
+				if (t - lastupdate > 10000) {
+					speed++;
+					lastupdate = t;
+				}
+				paint.setTextSize(24);
+				canvas.drawText(Integer.toString(score), 200, 30, paint);
+			//	canvas.drawText(Integer.toString(width), 250, 30, paint);
+				}
+			}
+		}
+
+		@Override
+		public boolean onTouchEvent(MotionEvent event) { // hva6ta touch
+															// eventite
+			// TODO Auto-generated method stub
+			// return super.onTouchEvent(event);
+			int action = event.getAction();
+			if (action == MotionEvent.ACTION_MOVE) { // tova e za drag i drop
+				// float x = event.getX();
+				// float y = event.getY();
+				// radius = (float) Math.sqrt(Math.pow(x-initX, 2) +
+				// Math.pow(y-initY, 2));
+			} else if (action == MotionEvent.ACTION_DOWN) { // tva e pri tap
+				initX = event.getX();
+				initY = event.getY();
+				// radius = 1;
+				drawing = true;
+				if (state==1) restart();
+			} else if (action == MotionEvent.ACTION_UP) { // tova e otpuskane
+				// drawing = false;
+			}
+
+			return true;
+		}
+		private void restart(){
+			int dist = height / 6;// make sure we get key events
+			ledges[0] = new Ledge(150, dist);
+			ledges[1] = new Ledge(300, 2 * dist);
+			ledges[2] = new Ledge(50, 3 * dist);
+			ledges[3] = new Ledge(200, 4 * dist);
+			ledges[4] = new Ledge(100, 5 * dist);
+			ledges[5] = new Ledge(0, 6 * dist);
+			ledges[6] = new Ledge(50, 7 * dist);
+			ledges[7] = new Ledge(24, 8 * dist);
+			ledges[8] = new Ledge(140, 9 * dist);
+			ledges[9] = new Ledge(200, 10 * dist);
+			ball = new Ball(t, z,frames,width,height);
+			state=0;
+			score=0;
+			speed=0;
+		}
+		public MySurfaceView(Context context) {
+			super(context);
+			// TODO Auto-generated constructor stub
+			init();
+		}
+
+		public MySurfaceView(Context context, AttributeSet attrs) {
+			super(context, attrs);
+			// TODO Auto-generated constructor stub
+			init();
+		}
+
+		public Crystal crystal;
+
+		public MySurfaceView(Context context, AttributeSet attrs, int defStyle) {
+			super(context, attrs, defStyle);
+			// TODO Auto-generated constructor stub
+			
+			
+			init();
+		}
+
+		private void init() {
+			Resources res = this.getResources();
+			Bitmap b = BitmapFactory.decodeResource(res, R.drawable.crystal);
+			int x=R.drawable.frame0;
+			for (int i=0;i<10;i++) {Bitmap t=BitmapFactory.decodeResource(res,x+i);Log.d("frame",Integer.toString(i));
+				frames[i]=Bitmap.createScaledBitmap(t, 40, 40, false);}
+			x=R.drawable.rframe0;
+			for (int i=0;i<10;i++) {Bitmap t=BitmapFactory.decodeResource(res,x+i);Log.d("frame",Integer.toString(i));
+			frames[i+10]=Bitmap.createScaledBitmap(t, 40, 40, false);}
+			
+			
+			Log.d("inicializirame", "init");
+			getHolder().addCallback(this);
+			thread = new MySurfaceThread(getHolder(), this);
+			Display display = getWindowManager().getDefaultDisplay();
+			width = display.getWidth();
+			height = display.getHeight();
+			b = Bitmap.createScaledBitmap(b, height / 50, height / 50, false);
+			crystal = new Crystal(20, 20, b);
+			setFocusable(true);
+			int dist = height / 6;// make sure we get key events
+			ledges[0] = new Ledge(150, dist);
+			ledges[1] = new Ledge(300, 2 * dist);
+			ledges[2] = new Ledge(50, 3 * dist);
+			ledges[3] = new Ledge(200, 4 * dist);
+			ledges[4] = new Ledge(100, 5 * dist);
+			ledges[5] = new Ledge(0, 6 * dist);
+			ledges[6] = new Ledge(50, 7 * dist);
+			ledges[7] = new Ledge(24, 8 * dist);
+			ledges[8] = new Ledge(140, 9 * dist);
+			ledges[9] = new Ledge(200, 10 * dist);
+			ball = new Ball(t, z,frames,width,height);
+			paint.setStyle(Paint.Style.STROKE);
+			paint.setStrokeWidth(3);
+			paint.setColor(Color.WHITE);
+		}
+
+		@Override
+		public void surfaceChanged(SurfaceHolder arg0, int arg1, int arg2,
+				int arg3) {
+			// TODO Auto-generated method stub
+		}
+
+		@Override
+		public void surfaceCreated(SurfaceHolder holder) {
+			// TODO Auto-generated method stub
+		//	thread.setRunning(true);
+		//	thread.start();
+			Log.d("created","created");
+			if (thread.getState()==Thread.State.TERMINATED) { 
+	               thread = new MySurfaceThread(getHolder(),this);
+	          }
+	          thread.setRunning(true);
+	          thread.start();
+		}
+
+		@Override
+		public void surfaceDestroyed(SurfaceHolder holder) {
+			// TODO Auto-generated method stub
+			boolean retry = true;
+			thread.setRunning(false);
+			while (retry) {
+				try {
+					thread.join();
+					retry = false;
+				} catch (InterruptedException e) {
+				}
+			}
+		}
+	}
+
+	/** Called when the activity is first created. */
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		// setContentView(R.layout.main);
+
+		MySurfaceView mySurfaceView = new MySurfaceView(this);
+		setContentView(mySurfaceView);
+		
+	}
+	@Override
+	public void onResume()
+	{
+		drawing=true;
+		Log.d("resuming","resuming");
+	    super.onResume();
+	    
+	}
+	
+	@Override
+	public void onPause()
+	{
+	    drawing=false;
+		Log.d("pausing","pausing");
+		
+		super.onPause();
+		
+	   }
+}

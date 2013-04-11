@@ -1,0 +1,89 @@
+package com.hellogoogleio;
+
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.drawable.Drawable;
+import android.content.Context;
+import android.content.res.Resources;
+
+public class Crystal {
+public float left,up,right,down;
+public Bitmap bitmap;
+public Drawable drawable;
+public Crystal(float x1,float y1,Context context)
+{
+	this.left=x1;
+	this.up=y1;
+	this.right=x1+200;
+	this.down=y1+30;
+	Resources res = context.getResources();
+	this.bitmap=BitmapFactory.decodeResource(res, R.drawable.crystal);
+	this.bitmap=Bitmap.createBitmap(this.bitmap);
+	//this.drawable=findDrawableByID();
+	
+}
+
+
+
+public float getLeft() {
+	return left;
+}
+
+
+
+public void setLeft(float left) {
+	this.left = left;
+}
+
+
+
+public float getUp() {
+	return up;
+}
+
+
+
+public void setUp(float up) {
+	this.up = up;
+}
+
+
+
+public float getRight() {
+	return right;
+}
+
+
+
+public void setRight(float right) {
+	this.right = right;
+}
+
+
+
+public float getDown() {
+	return down;
+}
+
+
+
+public void setDown(float down) {
+	this.down = down;
+}
+
+
+
+public void drawBall(Canvas canvas,Paint paint){
+	this.up=this.up-1;
+	this.down=this.down-1;
+	if (this.up<0) {this.up=1000;this.down=1030;}
+    
+	canvas.drawBitmap(this.bitmap, this.left, this.up, paint);
+	
+}
+
+
+}

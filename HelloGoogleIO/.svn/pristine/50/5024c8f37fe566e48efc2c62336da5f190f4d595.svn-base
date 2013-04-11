@@ -1,0 +1,54 @@
+package com.hellogoogleio;
+
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.Paint.Style;
+import android.graphics.RectF;
+
+public class Ball {
+public float x,y;
+
+public Ball(float x1,float y1)
+{
+	this.x=x1;
+	this.y=y1;
+}
+
+public float getX() {
+	return x;
+}
+
+public float getY() {
+	return y;
+}
+
+public void setX(float x) {
+	this.x = x;
+}
+
+public void setY(float y) {
+	this.y = y;
+}
+
+public void drawBall(Canvas canvas,float initX,float initY,Paint paint,int collision){
+	if (collision==0){
+	this.x=this.x+ (float)0.1*(initX-this.x);//update-va coordinatite sprqmo touch eventa
+	this.y=this.y +(float)0.1*(initY-this.y);}
+	else if (collision==1){
+		this.x=this.x- 1;//update-va coordinatite sprqmo touch eventa
+		this.y=this.y -1;
+		}
+	else if (collision==2) this.y=this.y-1;
+	else if (collision==3) {this.x=this.x+1;this.y=this.y-1;}
+	else if (collision==4) this.x=this.x-1;
+	else if (collision==6)this.x=this.x+1;
+	else if (collision==7) {this.x=this.x-1;this.y=this.y+1;}
+	else if (collision==8) this.y=this.y+1;
+	else if (collision==9) {this.x=this.x+1;this.y=this.y+1;}
+	paint.setStyle(Style.FILL);
+	canvas.drawCircle(this.x,this.y,20,paint);//risuva.
+	
+}
+
+
+}

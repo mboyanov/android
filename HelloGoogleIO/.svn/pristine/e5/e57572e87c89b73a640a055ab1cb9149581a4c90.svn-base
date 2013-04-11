@@ -1,0 +1,39 @@
+package com.hellogoogleio;
+
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+
+
+public class Ledge {
+private float x,y;
+
+public Ledge(float x1,float y1)
+{
+	this.x=x1;
+	this.y=y1;
+}
+
+public float getX() {
+	return x;
+}
+
+public float getY() {
+	return y;
+}
+
+public void setX(float x) {
+	this.x = x;
+}
+
+public void setY(float y) {
+	this.y = y;
+}
+
+public void drawBall(Canvas canvas,Paint paint){
+	
+	canvas.drawRect(this.x, this.y,this.x+50,this.y+50, paint);
+}
+
+
+}
