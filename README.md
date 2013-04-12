@@ -14,5 +14,7 @@ Project was suspended due to lack of cooperation.
 
 Other Projects limited by Non-Disclosure Agreement:
 Ticket Reader - Currently I am working on an application that scans ticket barcodes for specific events to check if they are valid - interfacing with a database through php.
+
 Amieca Application - Launcher application to accomodate the safe usage of Android devices for TVs by hotels.
+
 Amieca Radio - Application that connects to a huge database of online radios and plays them.
